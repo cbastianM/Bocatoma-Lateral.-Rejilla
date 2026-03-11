@@ -55,9 +55,9 @@ div[data-testid="stExpander"] [data-testid="stMarkdownContainer"]{overflow:visib
 with st.sidebar:
     st.markdown("## ⚙️ Datos de Entrada")
 
-            st.markdown("#### Caudal de diseño")
-            CMD = st.number_input("Caudal Máximo Diario CMD (L/s)", value=120.0, step=1.0)
-            factor_seg = st.selectbox("Factor de seguridad", [3,2], index=0)
+st.markdown("#### Caudal de diseño")
+CMD = st.number_input("Caudal Máximo Diario CMD (L/s)", value=120.0, step=1.0)
+factor_seg = st.selectbox("Factor de seguridad", [3,2], index=0)
 
     st.markdown("#### Rejilla")
     tipo_varilla   = st.selectbox("Sección varilla", ["Circular (B=1.79)", "Rectangular (B=2.42)"])
