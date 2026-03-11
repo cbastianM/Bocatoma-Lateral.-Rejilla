@@ -55,14 +55,9 @@ div[data-testid="stExpander"] [data-testid="stMarkdownContainer"]{overflow:visib
 with st.sidebar:
     st.markdown("## ⚙️ Datos de Entrada")
 
-    st.markdown("#### Población y Dotación")
-    poblacion  = st.number_input("Población (hab)", value=25630, step=100)
-    dotacion   = st.number_input("Dotación (L/hab·día)", value=230, step=5)
-    factor_seg = st.selectbox("Factor caudal diseño", [3, 2], index=0)
-
-    st.markdown("#### Factores de Caudal")
-    k1 = st.slider("k₁ — Máximo diario",  1.2, 1.6, 1.4, 0.05)
-    k2 = st.slider("k₂ — Máximo horario", 1.5, 2.0, 1.7, 0.05)
+            st.markdown("#### Caudal de diseño")
+            CMD = st.number_input("Caudal Máximo Diario CMD (L/s)", value=120.0, step=1.0)
+            factor_seg = st.selectbox("Factor de seguridad", [3,2], index=0)
 
     st.markdown("#### Rejilla")
     tipo_varilla   = st.selectbox("Sección varilla", ["Circular (B=1.79)", "Rectangular (B=2.42)"])
@@ -83,9 +78,6 @@ with st.sidebar:
 ang_rad = angulo_rej * math.pi / 180
 g = 9.81
 
-CmD      = poblacion * dotacion / 86400
-CMD      = k1 * CmD
-CMH      = k2 * CMD
 Q_diseño = factor_seg * CMD
 Q_m3s    = Q_diseño / 1000
 
@@ -117,11 +109,8 @@ st.markdown("##### Bocatoma Lateral — Procedimiento paso a paso")
 
 st.latex(rf"""
 \begin{{aligned}}
-\textbf{{Población}} &= {poblacion:,} \;\text{{hab}} \\
-\textbf{{Dotación}} &= {dotacion} \;\text{{L/hab-día}} \\
-k_1 &= {k1} \\
-k_2 &= {k2} \\
-\text{{Factor}} &= {factor_seg} \\[8pt]
+\textbf{CMD} &= {CMD} \;\text{L/s} \\
+\text{Factor} &= {factor_seg} \\
 \textbf{{Varilla}} &: \text{{{tipo_varilla.split('(')[0].strip()}}} \;\; \phi \, {d_varilla_pulg}\text{{''}} \\
 w \;\text{{(espesor)}} &= {w_bar*100:.2f} \;\text{{cm}} \;=\; {d_varilla_pulg}\text{{''}} \\
 b \;\text{{(separación libre)}} &= {b_sep*100:.2f} \;\text{{cm}} \;=\; {sep_pulg}\text{{''}} \\
@@ -139,12 +128,7 @@ st.markdown("")
 with st.expander("**Paso 1** — Caudal de diseño", expanded=True):
     st.markdown(f'<p class="note">Se usa {factor_seg}·CMD por seguridad.</p>', unsafe_allow_html=True)
 
-    st.latex(rf"Q_{{mD}} = \frac{{\text{{Pob}} \times \text{{Dot}}}}{{86400}}")
-    st.latex(rf"Q_{{mD}} = \frac{{{poblacion:,} \times {dotacion}}}{{86400}} = \boxed{{{CmD:.2f} \;\text{{L/s}}}}")
-
-    st.latex(rf"CMD = k_1 \cdot Q_{{mD}} = {k1} \times {CmD:.2f} = \boxed{{{CMD:.2f} \;\text{{L/s}}}}")
-
-    st.latex(rf"CMH = k_2 \cdot CMD = {k2} \times {CMD:.2f} = \boxed{{{CMH:.2f} \;\text{{L/s}}}}")
+    st.latex(rf"CMD = {CMD} \;\text{{L/s}}")
 
     st.latex(rf"Q_{{\text{{diseño}}}} = {factor_seg} \times CMD = {factor_seg} \times {CMD:.2f} = {Q_diseño:.2f} \;\text{{L/s}}")
 
@@ -217,27 +201,7 @@ with st.expander("**Paso 5** — Número de espacios y varillas"):
 # ════════════════════════════════════════
 # PASO 6
 # ════════════════════════════════════════
-with st.expander("**Paso 6** — Verificación"):
-    st.markdown(f'<p class="note">Fórmula empírica alternativa.</p>', unsafe_allow_html=True)
-
-    st.latex(r"L_v = \left(\frac{Q_1}{1.86 \cdot H^{1.6}}\right)^{1/0.9}")
-
-    st.latex(rf"L_v = \left(\frac{{{Q1:.6f}}}{{1.86 \times {H_carga}^{{1.6}}}}\right)^{{{1/0.9:.4f}}}")
-    st.latex(rf"\boxed{{L_v = {Lv:.4f} \;\text{{m}} \approx {round(Lv,2)} \;\text{{m}}}}")
-
-    dif = abs(Lv - Le) / Le * 100
-
-    st.latex(rf"\Delta = \frac{{|L_v - L_e|}}{{L_e}} \times 100 = {dif:.1f}\%")
-
-    if dif < 25:
-        st.markdown(f'<div class="good-box">✓ Le={round(Le,2)} m vs Lv={round(Lv,2)} m — Δ={dif:.1f}%</div>', unsafe_allow_html=True)
-    else:
-        st.markdown(f'<div class="warn-box">⚠ Le={round(Le,2)} m vs Lv={round(Lv,2)} m — Δ={dif:.1f}%</div>', unsafe_allow_html=True)
-
-# ════════════════════════════════════════
-# PASO 7
-# ════════════════════════════════════════
-with st.expander("**Paso 7** — Ancho total de la rejilla"):
+with st.expander("**Paso 6** — Ancho total de la rejilla"):
     st.markdown(f'<p class="note">Separación libre entre varillas: b = {b_sep*100:.2f} cm = {sep_pulg}"</p>', unsafe_allow_html=True)
 
     st.latex(r"\text{Ancho} = N_{\text{var}} \cdot w \;+\; N_{\text{esp}} \cdot b")
@@ -259,7 +223,6 @@ st.markdown("### 📊 Resumen")
 st.latex(rf"""
 \begin{{array}}{{|l|r|}}
 \hline
-Q_{{mD}} & {round(CmD)} \;\text{{L/s}} \\
 CMD & {round(CMD)} \;\text{{L/s}} \\
 Q_{{\text{{diseño}}}} & {round(Q_diseño)} \;\text{{L/s}} \\
 \hline
