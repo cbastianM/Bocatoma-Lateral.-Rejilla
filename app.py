@@ -6,6 +6,35 @@ import numpy as np
 
 st.set_page_config(page_title="Diseño de Rejilla — Bocatoma Lateral", page_icon="🌊", layout="centered")
 
+st.markdown("""
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+html,body,[class*="css"]{font-family:'DM Sans',sans-serif;}
+.stApp{background:#0d1117;color:#e6edf3;}
+h1,h2,h3,h4{font-family:'JetBrains Mono',monospace!important;color:#58a6ff!important;}
+
+.result-box{background:#0d2818;border:1px solid #1a4d2e;border-left:4px solid #3fb950;
+            border-radius:8px;padding:10px 14px;margin:8px 0;text-align:center;}
+.result-val{font-family:'JetBrains Mono',monospace;font-size:16px;color:#3fb950;font-weight:700;}
+
+.param-box{background:#1a1d2e;border:1px solid #30363d;border-left:4px solid #f6ad55;
+           border-radius:8px;padding:8px 12px;margin:4px 0;font-family:'JetBrains Mono',monospace;
+           font-size:11px;color:#f6ad55;line-height:1.7;}
+
+.note{color:#8b949e;font-size:12px;font-style:italic;margin:4px 0 8px 0;}
+
+.warn-box{background:#2d1216;border:1px solid #5c2029;border-left:4px solid #f85149;
+          border-radius:8px;padding:8px 12px;margin:6px 0;font-family:'JetBrains Mono',monospace;
+          font-size:12px;color:#f85149;}
+.good-box{background:#0d2818;border:1px solid #1a4d2e;border-left:4px solid #3fb950;
+          border-radius:8px;padding:8px 12px;margin:6px 0;font-family:'JetBrains Mono',monospace;
+          font-size:12px;color:#3fb950;}
+
+div[data-testid="stSidebar"]{background:#0d1117;border-right:1px solid #21262d;}
+footer{visibility:hidden;}
+</style>
+""", unsafe_allow_html=True)
+
 # ══════════════════════════════════════════════════
 # SIDEBAR
 # ══════════════════════════════════════════════════
@@ -40,7 +69,6 @@ Q_m3s    = Q_diseño / 1000
 
 hv       = v_aprox**2 / (2 * g)
 h_kirsch = B_factor * (w_bar / b_sep)**(4/3) * hv * math.sin(ang_rad)
-
 perdida_norma = 0.10
 perdida = max(h_kirsch, perdida_norma)
 
@@ -54,96 +82,60 @@ espacios   = Le / d_var
 n_esp      = round(espacios)
 n_varillas = n_esp - 1
 
+# Ancho total de la rejilla
 ancho_reja = n_varillas * w_bar + n_esp * b_sep
-
-# ══════════════════════════════════════════════════
-# HEADER
-# ══════════════════════════════════════════════════
-st.markdown("# 🌊 Diseño de Rejilla")
-st.markdown("##### Bocatoma Lateral — Procedimiento paso a paso")
-
-st.latex(rf"""
-\begin{{aligned}}
-\textbf{{CMD}} &= {CMD} \;\text{{L/s}} \\
-\text{{Factor}} &= {factor_seg} \\
-\textbf{{Varilla}} &: \text{{{tipo_varilla.split('(')[0].strip()}}} \;\; \phi \, {d_varilla_pulg}\text{{''}} \\
-w &= {w_bar*100:.2f} \;\text{{cm}} \\
-b &= {b_sep*100:.2f} \;\text{{cm}} \\
-\alpha &= {angulo_rej}° \\
-v &= {v_aprox} \;\text{{m/s}} \\
-H &= {H_carga} \;\text{{m}}
-\end{{aligned}}
-""")
 
 # ════════════════════════════════════════
 # PASO 1
 # ════════════════════════════════════════
-with st.expander("**Paso 1 — Caudal de diseño**", expanded=True):
+with st.expander("**Paso 1** — Caudal de diseño", expanded=True):
 
-    st.latex(rf"CMD = {CMD} \;L/s")
+    st.latex(rf"CMD = {CMD} \;\text{{L/s}}")
 
-    st.latex(rf"Q_{{diseño}} = {factor_seg} \times CMD")
+    st.latex(rf"Q_{{\text{{diseño}}}} = {factor_seg} \times {CMD} = {Q_diseño:.2f} \;\text{{L/s}}")
 
-    st.latex(rf"Q_{{diseño}} = {factor_seg} \times {CMD} = {Q_diseño:.2f} \;L/s")
-
-    st.success(f"Q diseño = {round(Q_diseño)} L/s  ({Q_m3s:.5f} m³/s)")
+    st.markdown(f'<div class="result-box"><span class="result-val">Q diseño = {round(Q_diseño)} L/s = {Q_m3s:.6f} m³/s</span></div>', unsafe_allow_html=True)
 
 # ════════════════════════════════════════
 # PASO 2
 # ════════════════════════════════════════
-with st.expander("**Paso 2 — Pérdida de carga en la rejilla (Kirschmer)**"):
+with st.expander("**Paso 2** — Pérdida de carga en la rejilla (Kirschmer)"):
 
-    st.latex(rf"h_v = \frac{{v^2}}{{2g}} = {hv:.6f} \;m")
-
-    st.latex(r"h = B \left(\frac{w}{b}\right)^{4/3} h_v \sin \alpha")
+    st.latex(rf"h_v = {hv:.6f} \;m")
 
     st.latex(rf"h = {h_kirsch:.6f} \;m")
-
-    st.success(f"Pérdida adoptada = {perdida:.2f} m")
 
 # ════════════════════════════════════════
 # PASO 3
 # ════════════════════════════════════════
-with st.expander("**Paso 3 — Vertedero sumergido (Villamonte)**"):
-
-    st.latex(r"S = \frac{H - h}{H}")
+with st.expander("**Paso 3** — Vertedero sumergido (Villamonte)"):
 
     st.latex(rf"S = {S:.3f}")
-
-    st.latex(r"Q_1 = \frac{Q}{(1-S^{1.5})^{0.385}}")
 
     st.latex(rf"Q_1 = {Q1:.6f} \;m^3/s")
 
 # ════════════════════════════════════════
 # PASO 4
 # ════════════════════════════════════════
-with st.expander("**Paso 4 — Longitud efectiva (Francis)**"):
-
-    st.latex(r"L_e = \frac{Q_1}{1.84H^{3/2}}")
+with st.expander("**Paso 4** — Longitud efectiva (Francis)"):
 
     st.latex(rf"L_e = {Le:.3f} \;m")
 
 # ════════════════════════════════════════
 # PASO 5
 # ════════════════════════════════════════
-with st.expander("**Paso 5 — Número de espacios y varillas**"):
+with st.expander("**Paso 5** — Número de espacios y varillas"):
 
-    st.latex(r"N_{esp} = \frac{L_e}{d}")
-
-    st.latex(rf"N_{{esp}} = {espacios:.2f} \approx {n_esp}")
+    st.latex(rf"N_{{esp}} = {n_esp}")
 
     st.latex(rf"N_{{var}} = {n_varillas}")
 
 # ════════════════════════════════════════
 # PASO 6
 # ════════════════════════════════════════
-with st.expander("**Paso 6 — Ancho total de la rejilla**"):
-
-    st.latex(r"\text{Ancho} = N_{var}w + N_{esp}b")
+with st.expander("**Paso 6** — Ancho total de la rejilla"):
 
     st.latex(rf"\text{{Ancho}} = {ancho_reja:.4f} \;m")
-
-    st.success(f"Ancho rejilla = {ancho_reja:.3f} m")
 
 # ════════════════════════════════════════
 # RESUMEN
@@ -153,36 +145,17 @@ st.markdown("### 📊 Resumen")
 st.latex(rf"""
 \begin{{array}}{{|l|r|}}
 \hline
-CMD & {round(CMD)} \;L/s \\
-Q_{{diseño}} & {round(Q_diseño)} \;L/s \\
+CMD & {round(CMD)} \;\text{{L/s}} \\
+Q_{{\text{{diseño}}}} & {round(Q_diseño)} \;\text{{L/s}} \\
 \hline
 S & {round(S,2)} \\
-Q_1 & {round(Q1,3)} \;m^3/s \\
+Q_1 & {round(Q1,3)} \;\text{{m³/s}} \\
 \hline
-L_e & {round(Le,2)} \;m \\
+L_e & {round(Le,2)} \;\text{{m}} \\
 \hline
-N_{{esp}} & {n_esp} \\
-N_{{var}} & {n_varillas} \\
-Ancho & {ancho_reja:.3f} \;m \\
+N°\text{{esp}} & {n_esp} \\
+N°\text{{var}} & {n_varillas} \\
+\text{{Ancho rejilla}} & {ancho_reja:.4f} \;\text{{m}} \\
 \hline
 \end{{array}}
 """)
-
-st.markdown("---")
-st.markdown("### 🔩 Representación de la Rejilla")
-
-ancho_cm = ancho_reja * 100
-d_cm     = w_bar * 100
-b_cm     = b_sep * 100
-H_dibujo = 100
-
-fig, ax = plt.subplots(figsize=(14,4))
-
-for i in range(n_varillas):
-    x_left = b_cm + i*(d_cm + b_cm)
-    ax.add_patch(plt.Rectangle((x_left,0), d_cm, H_dibujo))
-
-ax.set_xlim(0, ancho_cm)
-ax.set_ylim(0, H_dibujo)
-
-st.pyplot(fig)
