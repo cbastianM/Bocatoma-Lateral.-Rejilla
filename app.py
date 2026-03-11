@@ -1,8 +1,3 @@
-vamos realizar algunos cambios en este codigo, tu me debes decir en donde realizo los cambios y las lineas que debo cambiar. 
-
-1. Quiero quitar la población, dotación y factores de caudal, dejar solo el Caudar maximo diario CMD como parametro 
-2. Quitar el paso 6 de verificación 
-
 import streamlit as st
 import math
 import matplotlib.pyplot as plt
